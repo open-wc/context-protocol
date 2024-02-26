@@ -1,3 +1,5 @@
+// From: https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md#definitions
+
 /**
  * A Context object defines an optional initial value for a Context, as well as a name identifier for debugging purposes.
  */

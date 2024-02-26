@@ -1,11 +1,12 @@
 {
   "name": "context-protocol",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
-    "test": "npm run test:types",
+    "test": "npm run test:types && npm run test:e2e",
+    "test:e2e": "web-test-runner test/**/*.test.{js,html} --node-resolve",
     "test:types": "tsc --noEmit"
   },
   "exports": {
@@ -18,6 +19,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@open-wc/testing": "^4.0.0",
+    "@web/dev-server-esbuild": "^1.0.2",
+    "@web/test-runner": "^0.18.0",
+    "@web/test-runner-playwright": "^0.11.0",
+    "chai": "^5.1.0",
     "typescript": "^5.3.3"
   }
 }
