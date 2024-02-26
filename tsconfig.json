@@ -1,0 +1,14 @@
+{ 
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "target": "esnext",
+    "declaration": true,
+    "module": "esnext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "isolatedModules": true
+}
