@@ -2,32 +2,15 @@
 <html>
   <head>
     <script type="module">
-      import { ContextEvent, createContext } from '../index.ts';
-
-      class ObservableMap {
-        constructor() {
-          this.store = new Map();
-        }
-
-        set(key, value, subscribers = new Set()) {
-          const data = this.store.get(key);
-          subscribers = new Set([...subscribers, ...(data?.subscribers || new Set())]);
-          this.store.set(key, {value, subscribers});
-          for (const subscriber of subscribers) {
-            subscriber(value);
-          }
-        }
-
-        get(key) {
-          return this.store.get(key);
-        }
-      }
+      import { ContextEvent, createContext } from '../../index.ts';
+      import {ObservableMap} from '../../context-protocol.ts';
 
       window.customElements.define('server-state', class ServerState extends HTMLElement {
-        dataStore = new ObservableMap();
         connectedCallback() {
+          this.dataStore = new ObservableMap();
           // We listen for a bubbled context request event and provide the event with the context requested.
-          this.addEventListener('context-request', event => {
+          this.addEventListener('context-request', 
+            event => {
             const {name, initialValue} = event.context;
             const subscribe = event.subscribe;
             if (initialValue) {

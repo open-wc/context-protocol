@@ -1,4 +1,4 @@
-{ 
+{
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "outDir": "./dist/",
@@ -8,7 +8,11 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["esnext", "dom"],
   },
-  "isolatedModules": true
+    "files": [
+      "./provider-element.ts"
+    ],
+  "isolatedModules": true,
 }
