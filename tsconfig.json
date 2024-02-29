@@ -10,9 +10,11 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["esnext", "dom"],
+    "checkJs": true,
+    "isolatedModules": true
   },
     "files": [
-      "./provider-element.ts"
+      "./mixins.ts"
     ],
   "isolatedModules": true,
 }
