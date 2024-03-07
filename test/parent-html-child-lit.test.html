@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <script type="module">
+      import { ProviderMixin, ConsumerMixin } from '../../mixins.ts';
+      import {html, css, LitElement} from 'lit';
+
+      window.customElements.define('server-state', class ServerState extends ProviderMixin(HTMLElement) {
+        static observedAttributes = ["hit-count"];
+      });
+
+      window.customElements.define('hit-count', class HitCount extends ConsumerMixin(LitElement) {
+        static properties = {
+          hits: {type: Number},
+        };
+
+        contexts = {
+          'hit-count': (count) => {
+            this.textContent = `${count} hits!`;
+          }
+        };
+
+        constructor() {
+          super();
+          this.hits = 'Loading...';
+        }
+
+        render() {
+          return html`<p>${this.hits} hits!</p>`;
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <server-state hit-count="9001">
+      <hit-count>
+        Loading...
+      </hit-count>
+    </server-state>
+
+    <script type="module">
+      import { runTests } from "@web/test-runner-mocha";
+      import { expect } from "chai";
+      import { waitUntil } from '@open-wc/testing';
+
+      runTests(() => {
+        it("subscribes to changes", async () => {
+          const provider = document.querySelector('server-state');
+          const el = document.querySelector('hit-count');
+          await waitUntil(() => el.textContent.trim() !== 'Loading...');
+          expect(el.textContent).to.equal('9001 hits!');
+
+          provider.setAttribute('hit-count', 9002);
+          await waitUntil(() => el.textContent.trim() !== '9001 hits!');
+          expect(el.textContent).to.equal('9002 hits!');
+        });
+      });
+    </script>
+  </body>
+</html>
