@@ -17,15 +17,24 @@ interface CustomElement extends HTMLElement {
 export function ProviderMixin(Class: CustomElement) {
   return class extends Class {
     #dataStore = new ObservableMap();
+    contexts: Record<string, () => Promise<unknown>> = {};
 
-    connectedCallback() {
+    async connectedCallback() {
       super.connectedCallback?.();
+
+      // Set up the event handler as soon as possible since we're async and will need to make sure
+      // we are catching all requests for context
+      this.addEventListener('context-request', this);
 
       for (const attribute in this.observedAttributes) {
         this.#dataStore.set(attribute, this.getAttribute(attribute));
       }
 
-      this.addEventListener('context-request', this);
+      for (const [key, context] of Object.entries(this.contexts)) {
+        // We _will_ have a key for this at some point in the future but might not have it by the
+        // time the request comes in
+        this.#dataStore.set(key, context());
+      }
     }
 
     // Listen for changed attributes and update the data store accordingly
@@ -54,17 +63,19 @@ export function ProviderMixin(Class: CustomElement) {
         this.#dataStore.set(name, initialValue);
       }
       const data = this.#dataStore.get(name);
+
+      // We need to decouple the subscription of the data and the data itself so that we can 
+      // subscribe to data that _might_ be here in the future.
+      const unsubscribe = () => {
+        data.subscribers.delete(event.callback);
+      }
+
+      // Let's subscribe in case we have this data in the future.
+      if (subscribe) {
+        data.subscribers.add(event.callback);
+      }
       if (data) {
         event.stopPropagation();
-
-        let unsubscribe = () => undefined;
-
-        if (subscribe) {
-          unsubscribe = () => {
-            data.subscribers.delete(event.callback);
-          };
-          data.subscribers.add(event.callback);
-        }
 
         event.callback(data.value, unsubscribe);
       }

@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <script type="module">
+      import { ProviderMixin, ConsumerMixin } from "../../mixins.ts";
+
+      const realFetch = window.fetch;
+
+      function fakeFetch(...args) {
+        if (args[0] === "https://api.github.com/users/koddsson") {
+          // Simulate a network request
+          return new Promise((resolve) => {
+            setTimeout(function () {
+              resolve({
+                json() {
+                  return Promise.resolve({ followers: 999 });
+                },
+              });
+            }, 400);
+          });
+        }
+        realFetch(...args);
+      }
+
+      window.fetch = fakeFetch;
+
+      window.customElements.define(
+        "server-state",
+        class ServerState extends ProviderMixin(HTMLElement) {
+          contexts = {
+            "hit-count": async () => {
+              const response = await fetch(
+                "https://api.github.com/users/koddsson",
+              );
+              const data = await response.json();
+              return data.followers;
+            },
+          };
+        },
+      );
+
+      window.customElements.define(
+        "hit-count",
+        class HitCount extends ConsumerMixin(HTMLElement) {
+          contexts = {
+            "hit-count": (count) => {
+              this.textContent = `${count} hits!`;
+            },
+          };
+        },
+      );
+    </script>
+  </head>
+  <body>
+    <server-state hit-count="9001">
+      <hit-count> Loading... </hit-count>
+    </server-state>
+
+    <script type="module">
+      import { runTests } from "@web/test-runner-mocha";
+      import { expect } from "chai";
+      import { waitUntil } from "@open-wc/testing";
+
+      runTests(() => {
+        it("subscribes to changes", async () => {
+          const provider = document.querySelector("server-state");
+          const el = document.querySelector("hit-count");
+          await waitUntil(() => el.textContent.trim() !== "Loading...");
+          expect(el.textContent).to.equal("9990 hits!");
+        });
+      });
+    </script>
+  </body>
+</html>
