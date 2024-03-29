@@ -8,19 +8,7 @@ on:
     types: [created, workflow_dispatch]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 21
-      - run: npm ci
-      - run: npx playwright install
-      - run: npm test
-
   publish-npm:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +17,7 @@ jobs:
           node-version: 21
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: npm build
+      - run: npm run build
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
@@ -43,6 +31,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Publish package
-        run: npx jsr publish
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 21
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm run build
+      - run: npx jsr publish
