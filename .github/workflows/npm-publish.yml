@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: 21
       - run: npm ci
+      - run: npx playwright install
       - run: npm test
 
   publish-npm:
