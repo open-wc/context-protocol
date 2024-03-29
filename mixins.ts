@@ -44,6 +44,10 @@ export function ProviderMixin(Class: CustomElement) {
       }
     }
 
+    updateContext(name: string, value: unknown) {
+      this.#dataStore.set(name, value);
+    }
+
     // We listen for a bubbled context request event and provide the event with the context requested.
     #handleContextRequest(
       event: ContextEvent<{ name: string; initialValue?: unknown }>,
@@ -75,11 +79,11 @@ export function ProviderMixin(Class: CustomElement) {
 export function ConsumerMixin(Class: CustomElement) {
   return class extends Class {
     unsubscribes: Array<() => void> = [];
-    contexts: Record<string, (data: unknown) => void> = {};
 
     connectedCallback() {
       super.connectedCallback?.();
 
+      // @ts-expect-error don't worry about it babe
       for (const [contextName, callback] of Object.entries(this.contexts)) {
         const context = createContext(contextName);
 
@@ -90,6 +94,7 @@ export function ConsumerMixin(Class: CustomElement) {
           new ContextEvent(
             context,
             (data, unsubscribe) => {
+              // @ts-expect-error
               callback(data);
               if (unsubscribe) {
                 this.unsubscribes.push(unsubscribe);
