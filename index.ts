@@ -14,7 +14,7 @@ interface CustomElement extends HTMLElement {
   adoptedCallback?(): void;
 }
 
-export function ProviderMixin(Class: CustomElement) {
+export function ProviderMixin(Class: CustomElement): CustomElement {
   return class extends Class {
     #dataStore = new ObservableMap();
 
@@ -72,7 +72,7 @@ export function ProviderMixin(Class: CustomElement) {
   };
 }
 
-export function ConsumerMixin(Class: CustomElement) {
+export function ConsumerMixin(Class: CustomElement): CustomElement {
   return class extends Class {
     unsubscribes: Array<() => void> = [];
 
