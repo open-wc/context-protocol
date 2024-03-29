@@ -1,18 +1,73 @@
-type Subscriber<T> = (value: T) => void;
+// From: https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md#definitions
 
-export class ObservableMap {
-  #store = new Map<string, {value: unknown, subscribers: Set<Subscriber<unknown>>}>
+/**
+ * A Context object defines an optional initial value for a Context, as well as a name identifier for debugging purposes.
+ */
+export type Context<T> = {
+  name: string;
+  initialValue?: T;
+};
 
-  set(key: string, value: unknown, subscribers = new Set<Subscriber<unknown>>()) {
-    const data = this.#store.get(key);
-    subscribers = new Set([...subscribers, ...(data?.subscribers || new Set())]);
-    this.#store.set(key, {value, subscribers});
-    for (const subscriber of subscribers) {
-      subscriber(value);
-    }
+/**
+ * An unknown context type
+ */
+export type UnknownContext = Context<unknown>;
+
+/**
+ * A helper type which can extract a Context value type from a Context type
+ */
+export type ContextType<T extends UnknownContext> = T extends Context<infer Y>
+  ? Y
+  : never;
+
+/**
+ * A function which creates a Context value object
+ */
+export function createContext<T>(
+  name: string,
+  initialValue?: T
+): Readonly<Context<T>> {
+  return {
+    name,
+    initialValue,
+  };
+}
+
+/**
+ * A callback which is provided by a context requester and is called with the value satisfying the request.
+ * This callback can be called multiple times by context providers as the requested value is changed.
+ */
+export type ContextCallback<ValueType> = (
+  value: ValueType,
+  unsubscribe?: () => void
+) => void;
+
+/**
+ * An event fired by a context requester to signal it desires a named context.
+ *
+ * A provider should inspect the `context` property of the event to determine if it has a value that can
+ * satisfy the request, calling the `callback` with the requested value if so.
+ *
+ * If the requested context event contains a truthy `subscribe` value, then a provider can call the callback
+ * multiple times if the value is changed, if this is the case the provider should pass an `unsubscribe`
+ * function to the callback which requesters can invoke to indicate they no longer wish to receive these updates.
+ */
+export class ContextEvent<T extends UnknownContext> extends Event {
+  public constructor(
+    public readonly context: T,
+    public readonly callback: ContextCallback<ContextType<T>>,
+    public readonly subscribe?: boolean
+  ) {
+    super("context-request", { bubbles: true, composed: true });
   }
+}
 
-  get(key: string) {
-    return this.#store.get(key);
+declare global {
+  interface HTMLElementEventMap {
+    /**
+     * A 'context-request' event can be emitted by any element which desires
+     * a context value to be injected by an external provider.
+     */
+    "context-request": ContextEvent<UnknownContext>;
   }
 }

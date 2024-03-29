@@ -1,7 +1,7 @@
 {
-  "name": "context-protocol",
+  "name": "@koddsson/context-protocol",
   "version": "0.0.1",
-  "description": "",
+  "description": "A Lit compatible implementation of the context-protocol community protocol",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -13,10 +13,6 @@
     ".": {
       "default": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    },
-    "mixins": {
-      "default": "./dist/mixins.js",
-      "types": "./dist/mixins.d.ts"
     }
   },
   "keywords": [],

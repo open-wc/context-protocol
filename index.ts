@@ -1,73 +1,116 @@
-// From: https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md#definitions
+import { ObservableMap } from "./observable-map.js";
+import { createContext, ContextEvent, UnknownContext } from "./context-protocol.js";
 
-/**
- * A Context object defines an optional initial value for a Context, as well as a name identifier for debugging purposes.
- */
-export type Context<T> = {
-  name: string;
-  initialValue?: T;
-};
+interface CustomElement extends HTMLElement {
+  new (...args: any[]): CustomElement;
+  observedAttributes: string[];
+  connectedCallback?(): void;
+  attributeChangedCallback?(
+    name: string,
+    oldValue: string | null,
+    newValue: string | null,
+  ): void;
+  disconnectedCallback?(): void;
+  adoptedCallback?(): void;
+}
 
-/**
- * An unknown context type
- */
-export type UnknownContext = Context<unknown>;
+export function ProviderMixin(Class: CustomElement) {
+  return class extends Class {
+    #dataStore = new ObservableMap();
 
-/**
- * A helper type which can extract a Context value type from a Context type
- */
-export type ContextType<T extends UnknownContext> = T extends Context<infer Y>
-  ? Y
-  : never;
+    connectedCallback() {
+      super.connectedCallback?.();
 
-/**
- * A function which creates a Context value object
- */
-export function createContext<T>(
-  name: string,
-  initialValue?: T
-): Readonly<Context<T>> {
-  return {
-    name,
-    initialValue,
+      // @ts-expect-error todo
+      for (const [key, value] of Object.entries(this.contexts || {})) {
+        // @ts-expect-error todo
+        this.#dataStore.set(key, value());
+      }
+
+      this.addEventListener('context-request', this);
+    }
+
+    disconnectedCallback(): void {
+      this.#dataStore = new ObservableMap();
+    }
+
+    handleEvent(event: Event) {
+      if (event.type === "context-request") {
+        this.#handleContextRequest(event as ContextEvent<UnknownContext>);
+      }
+    }
+
+    updateContext(name: string, value: unknown) {
+      this.#dataStore.set(name, value);
+    }
+
+    // We listen for a bubbled context request event and provide the event with the context requested.
+    #handleContextRequest(
+      event: ContextEvent<{ name: string; initialValue?: unknown }>,
+    ) {
+      const { name, initialValue } = event.context;
+      const subscribe = event.subscribe;
+      if (initialValue) {
+        this.#dataStore.set(name, initialValue);
+      }
+      const data = this.#dataStore.get(name);
+      if (data) {
+        event.stopPropagation();
+
+        let unsubscribe = () => undefined;
+
+        if (subscribe) {
+          unsubscribe = () => {
+            data.subscribers.delete(event.callback);
+          };
+          data.subscribers.add(event.callback);
+        }
+
+        event.callback(data.value, unsubscribe);
+      }
+    }
   };
 }
 
-/**
- * A callback which is provided by a context requester and is called with the value satisfying the request.
- * This callback can be called multiple times by context providers as the requested value is changed.
- */
-export type ContextCallback<ValueType> = (
-  value: ValueType,
-  unsubscribe?: () => void
-) => void;
+export function ConsumerMixin(Class: CustomElement) {
+  return class extends Class {
+    unsubscribes: Array<() => void> = [];
 
-/**
- * An event fired by a context requester to signal it desires a named context.
- *
- * A provider should inspect the `context` property of the event to determine if it has a value that can
- * satisfy the request, calling the `callback` with the requested value if so.
- *
- * If the requested context event contains a truthy `subscribe` value, then a provider can call the callback
- * multiple times if the value is changed, if this is the case the provider should pass an `unsubscribe`
- * function to the callback which requesters can invoke to indicate they no longer wish to receive these updates.
- */
-export class ContextEvent<T extends UnknownContext> extends Event {
-  public constructor(
-    public readonly context: T,
-    public readonly callback: ContextCallback<ContextType<T>>,
-    public readonly subscribe?: boolean
-  ) {
-    super("context-request", { bubbles: true, composed: true });
-  }
-}
+    connectedCallback() {
+      super.connectedCallback?.();
 
-declare global {
-  interface HTMLElementEventMap {
-    /**
-     * A 'context-request' event can be emitted by any element which desires
-     * a context value to be injected by an external provider.
-     */
-    "context-request": ContextEvent<UnknownContext>;
-  }
+      // @ts-expect-error don't worry about it babe
+      for (const [contextName, callback] of Object.entries(this.contexts)) {
+        const context = createContext(contextName);
+
+        // We dispatch a event with that context. The event will bubble up the tree until it
+        // reaches a component that is able to provide that value to us.
+        // The event has a callback for the the value.
+        this.dispatchEvent(
+          new ContextEvent(
+            context,
+            (data, unsubscribe) => {
+              // @ts-expect-error
+              callback(data);
+              if (unsubscribe) {
+                this.unsubscribes.push(unsubscribe);
+              }
+            },
+            // Always subscribe. Consumers can ignore updates if they'd like.
+            true,
+          ),
+        );
+      }
+    }
+
+    // Unsubscribe from all callbacks when disconnecting
+    disconnectedCallback() {
+      for (const unsubscribe of this.unsubscribes) {
+        unsubscribe?.();
+      }
+      // Empty out the array in case this element is still stored in memory but just not connected
+      // to the DOM.
+      this.unsubscribes = [];
+    }
+  };
 }
