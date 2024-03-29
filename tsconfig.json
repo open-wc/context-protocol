@@ -14,7 +14,9 @@
     "isolatedModules": true
   },
     "files": [
-      "./mixins.ts"
+      "./index.ts",
+      "./observable-map.ts",
+      "./context-protocol.ts"
     ],
   "isolatedModules": true,
 }
