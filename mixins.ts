@@ -1,4 +1,4 @@
-import { ObservableMap } from "./context-protocol.js";
+import { ObservableMap } from "./observable-map.js";
 import { createContext, ContextEvent, UnknownContext } from "./index.js";
 
 interface CustomElement extends HTMLElement {
