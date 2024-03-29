@@ -1,0 +1,5 @@
+{
+  "name": "@koddsson/context-protocol",
+  "version": "0.0.2",
+  "exports": "./index.ts"
+}
