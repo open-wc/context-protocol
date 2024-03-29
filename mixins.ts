@@ -1,5 +1,5 @@
 import { ObservableMap } from "./observable-map.js";
-import { createContext, ContextEvent, UnknownContext } from "./index.js";
+import { createContext, ContextEvent, UnknownContext } from "./context-protocol.js";
 
 interface CustomElement extends HTMLElement {
   new (...args: any[]): CustomElement;
