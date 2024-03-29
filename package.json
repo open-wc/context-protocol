@@ -1,6 +1,6 @@
 {
   "name": "@koddsson/context-protocol",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Lit compatible implementation of the context-protocol community protocol",
   "type": "module",
   "scripts": {
