@@ -13,6 +13,10 @@
     ".": {
       "default": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "mixins": {
+      "default": "./dist/mixins.js",
+      "types": "./dist/mixins.d.ts"
     }
   },
   "keywords": [],
