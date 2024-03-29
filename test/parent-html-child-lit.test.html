@@ -6,7 +6,11 @@
       import {html, css, LitElement} from 'lit';
 
       window.customElements.define('server-state', class ServerState extends ProviderMixin(HTMLElement) {
-        static observedAttributes = ["hit-count"];
+        contexts = {
+          'hit-count': () => {
+            return 9001;
+          }
+        }
       });
 
       window.customElements.define('hit-count', class HitCount extends ConsumerMixin(LitElement) {
@@ -32,7 +36,7 @@
     </script>
   </head>
   <body>
-    <server-state hit-count="9001">
+    <server-state>
       <hit-count>
         Loading...
       </hit-count>
@@ -50,7 +54,7 @@
           await waitUntil(() => el.textContent.trim() !== 'Loading...');
           expect(el.textContent).to.equal('9001 hits!');
 
-          provider.setAttribute('hit-count', 9002);
+          provider.updateContext('hit-count', 9002);
           await waitUntil(() => el.textContent.trim() !== '9001 hits!');
           expect(el.textContent).to.equal('9002 hits!');
         });

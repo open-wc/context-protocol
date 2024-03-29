@@ -21,17 +21,13 @@ export function ProviderMixin(Class: CustomElement) {
     connectedCallback() {
       super.connectedCallback?.();
 
-      for (const attribute in this.observedAttributes) {
-        this.#dataStore.set(attribute, this.getAttribute(attribute));
+      // @ts-expect-error todo
+      for (const [key, value] of Object.entries(this.contexts || {})) {
+        // @ts-expect-error todo
+        this.#dataStore.set(key, value());
       }
 
       this.addEventListener('context-request', this);
-    }
-
-    // Listen for changed attributes and update the data store accordingly
-    attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-      super.attributeChangedCallback?.(name, oldValue, newValue);
-      this.#dataStore.set(name, newValue);
     }
 
     disconnectedCallback(): void {
