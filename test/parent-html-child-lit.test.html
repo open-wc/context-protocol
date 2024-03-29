@@ -1,8 +1,8 @@
-<!doctype html>
 <html>
+  <!doctype html>
   <head>
     <script type="module">
-      import { ProviderMixin, ConsumerMixin } from '../../mixins.ts';
+      import { ProviderMixin, ConsumerMixin } from '../../index.ts';
       import {html, css, LitElement} from 'lit';
 
       window.customElements.define('server-state', class ServerState extends ProviderMixin(HTMLElement) {

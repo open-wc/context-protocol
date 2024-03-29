@@ -2,7 +2,7 @@
 <html>
   <head>
     <script type="module">
-      import { ProviderMixin, ConsumerMixin } from '../../mixins.ts';
+      import { ProviderMixin, ConsumerMixin } from '../../index.ts';
 
       window.customElements.define('server-state', class ServerState extends ProviderMixin(HTMLElement) {
         contexts = {
