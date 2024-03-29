@@ -1,5 +1,4 @@
-# context-protocol
+# @koddsson/context-protocol
 
-## TODO
+A Lit compatible implementation of the [context-protocol community protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md).
 
-- [ ] Lint for browser support.
