@@ -13,6 +13,10 @@
     ".": {
       "default": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "mixins": {
+      "default": "./dist/mixins.js",
+      "types": "./dist/mixins.d.ts"
     }
   },
   "keywords": [],
@@ -24,6 +28,7 @@
     "@web/test-runner": "^0.18.0",
     "@web/test-runner-playwright": "^0.11.0",
     "chai": "^5.1.0",
+    "lit": "^3.1.2",
     "typescript": "^5.3.3"
   }
 }
