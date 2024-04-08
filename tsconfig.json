@@ -11,12 +11,10 @@
     "forceConsistentCasingInFileNames": true,
     "lib": ["esnext", "dom"],
     "checkJs": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "moduleResolution": "Bundler",
+    "experimentalDecorators": true
   },
-    "files": [
-      "./index.ts",
-      "./observable-map.ts",
-      "./context-protocol.ts"
-    ],
-  "isolatedModules": true,
+  "include": ["./*.ts", "./test/*.ts"],
+  "isolatedModules": true
 }
