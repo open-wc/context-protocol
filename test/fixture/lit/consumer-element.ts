@@ -10,19 +10,19 @@ export class ConsumerElement extends ConsumerMixin(LitElement) {
 
   contexts = {
     "hit-count": (count: number) => {
-      // @ts-expect-error todo
+      // @ts-expect-error
       this.hitCount = `${count} hits!`;
     },
   };
 
   constructor() {
     super();
-    // @ts-expect-error todo
+    // @ts-expect-error
     this.hitCount = "Loading...";
   }
 
   render() {
-    // @ts-expect-error todo
+    // @ts-expect-error
     return html`${this.hitCount}`;
   }
 }

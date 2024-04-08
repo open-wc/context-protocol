@@ -11,7 +11,7 @@ window.customElements.define("hit-count", ConsumerElement);
 
 describe("Parent[HTML] => Child[Lit]", () => {
   it("subscribes to changes", async () => {
-    const provider = await fixture<HTMLElement>(
+    const provider = await fixture<ProviderElement>(
       `<server-state><hit-count>Loading...</hit-count></server-state>`,
     );
     const el = provider?.querySelector("hit-count");
@@ -19,7 +19,6 @@ describe("Parent[HTML] => Child[Lit]", () => {
     await waitUntil(() => el?.shadowRoot?.textContent?.trim() !== "Loading...");
     expect(el?.shadowRoot?.textContent).to.equal("9001 hits!");
 
-    // @ts-expect-error todo
     provider?.updateContext?.("hit-count", 9002);
     await waitUntil(() => el?.shadowRoot?.textContent?.trim() !== "9001 hits!");
     expect(el?.shadowRoot?.textContent).to.equal("9002 hits!");

@@ -25,18 +25,27 @@ export interface CustomElement extends Element {
 
 export declare type Constructor<T> = new (...args: any[]) => T;
 
-export function ProviderMixin<T extends Constructor<CustomElement>>(
+type ProviderElement = CustomElement & {
+  contexts?: Record<PropertyKey, () => unknown>;
+  updateContext?(name: string, value: unknown): void;
+};
+
+type ConsumerElement = CustomElement & {
+  contexts?: Record<PropertyKey, (data: any) => void>;
+};
+
+export function ProviderMixin<T extends Constructor<ProviderElement>>(
   Class: T,
-): T & Constructor<unknown> {
+): T & Constructor<ProviderElement> {
   return class extends Class {
     #dataStore = new ObservableMap();
 
     connectedCallback() {
       super.connectedCallback?.();
 
-      // @ts-expect-error todo
-      for (const [key, value] of Object.entries(this.contexts || {})) {
-        // @ts-expect-error todo
+      const contexts = "contexts" in this ? this.contexts : {};
+
+      for (const [key, value] of Object.entries(contexts || {})) {
         this.#dataStore.set(key, value());
       }
 
@@ -86,10 +95,6 @@ export function ProviderMixin<T extends Constructor<CustomElement>>(
   };
 }
 
-type ConsumerElement = CustomElement & {
-  contexts?: Record<PropertyKey, (data: any) => void>;
-};
-
 export function ConsumerMixin<T extends Constructor<ConsumerElement>>(
   Class: T,
 ): T & Constructor<ConsumerElement> {
@@ -111,8 +116,8 @@ export function ConsumerMixin<T extends Constructor<ConsumerElement>>(
     connectedCallback() {
       super.connectedCallback?.();
 
-      // @ts-expect-error don't worry about it babe
-      for (const [contextName, callback] of Object.entries(this.contexts)) {
+      const contexts = "contexts" in this ? this.contexts : {};
+      for (const [contextName, callback] of Object.entries(contexts || {})) {
         const context = createContext(contextName);
 
         // We dispatch a event with that context. The event will bubble up the tree until it
