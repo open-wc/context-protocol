@@ -16,16 +16,15 @@ export type UnknownContext = Context<unknown>;
 /**
  * A helper type which can extract a Context value type from a Context type
  */
-export type ContextType<T extends UnknownContext> = T extends Context<infer Y>
-  ? Y
-  : never;
+export type ContextType<T extends UnknownContext> =
+  T extends Context<infer Y> ? Y : never;
 
 /**
  * A function which creates a Context value object
  */
 export function createContext<T>(
   name: string,
-  initialValue?: T
+  initialValue?: T,
 ): Readonly<Context<T>> {
   return {
     name,
@@ -39,7 +38,7 @@ export function createContext<T>(
  */
 export type ContextCallback<ValueType> = (
   value: ValueType,
-  unsubscribe?: () => void
+  unsubscribe?: () => void,
 ) => void;
 
 /**
@@ -56,18 +55,24 @@ export class ContextEvent<T extends UnknownContext> extends Event {
   public constructor(
     public readonly context: T,
     public readonly callback: ContextCallback<ContextType<T>>,
-    public readonly subscribe?: boolean
+    public readonly subscribe?: boolean,
   ) {
     super("context-request", { bubbles: true, composed: true });
   }
 }
 
+/**
+ * A 'context-request' event can be emitted by any element which desires
+ * a context value to be injected by an external provider.
+ */
 declare global {
+  interface WindowEventMap {
+    "context-request": ContextEvent<UnknownContext>;
+  }
+  interface ElementEventMap {
+    "context-request": ContextEvent<UnknownContext>;
+  }
   interface HTMLElementEventMap {
-    /**
-     * A 'context-request' event can be emitted by any element which desires
-     * a context value to be injected by an external provider.
-     */
     "context-request": ContextEvent<UnknownContext>;
   }
 }

@@ -19,9 +19,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@open-wc/dedupe-mixin": "^1.4.0",
+    "@open-wc/scoped-elements": "^3.0.5",
     "@open-wc/testing": "^4.0.0",
     "@types/mocha": "^10.0.6",
     "@web/dev-server-esbuild": "^1.0.2",
+    "@web/dev-server-polyfill": "^1.0.4",
     "@web/test-runner": "^0.18.0",
     "@web/test-runner-playwright": "^0.11.0",
     "chai": "^5.1.0",
