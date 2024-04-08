@@ -49,18 +49,12 @@ export function ProviderMixin<T extends Constructor<ProviderElement>>(
         this.#dataStore.set(key, value());
       }
 
-      this.addEventListener("context-request", this);
+      this.addEventListener("context-request", this.#handleContextRequest);
     }
 
     disconnectedCallback(): void {
       this.#dataStore = new ObservableMap();
-      this.removeEventListener("context-request", this);
-    }
-
-    handleEvent(event: Event) {
-      if (event.type === "context-request") {
-        this.#handleContextRequest(event as ContextEvent<UnknownContext>);
-      }
+      this.removeEventListener("context-request", this.#handleContextRequest);
     }
 
     updateContext(name: string, value: unknown) {
@@ -68,9 +62,7 @@ export function ProviderMixin<T extends Constructor<ProviderElement>>(
     }
 
     // We listen for a bubbled context request event and provide the event with the context requested.
-    #handleContextRequest(
-      event: ContextEvent<{ name: string; initialValue?: unknown }>,
-    ) {
+    #handleContextRequest(event: ContextEvent<UnknownContext>) {
       const { name, initialValue } = event.context;
       const subscribe = event.subscribe;
       if (initialValue) {
