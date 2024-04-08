@@ -1,10 +1,16 @@
+import { polyfill } from "@web/dev-server-polyfill";
 import { playwrightLauncher } from "@web/test-runner-playwright";
 import { esbuildPlugin } from "@web/dev-server-esbuild";
 
 export default {
   files: ["test/**/*.test.{js,ts}"],
   nodeResolve: true,
-  plugins: [esbuildPlugin({ ts: true })],
+  plugins: [
+    esbuildPlugin({ ts: true }),
+    polyfill({
+      scopedCustomElementRegistry: true,
+    }),
+  ],
   filterBrowserLogs(log) {
     return (
       log.args[0] !==
