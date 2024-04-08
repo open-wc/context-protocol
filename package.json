@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "test": "npm run test:types && npm run test:e2e",
-    "test:e2e": "web-test-runner test/**/*.test.{js,html} --node-resolve",
+    "test:e2e": "web-test-runner",
     "test:types": "tsc --noEmit"
   },
   "exports": {
@@ -20,11 +20,13 @@
   "license": "ISC",
   "devDependencies": {
     "@open-wc/testing": "^4.0.0",
+    "@types/mocha": "^10.0.6",
     "@web/dev-server-esbuild": "^1.0.2",
     "@web/test-runner": "^0.18.0",
     "@web/test-runner-playwright": "^0.11.0",
     "chai": "^5.1.0",
     "lit": "^3.1.2",
+    "mocha": "^10.4.0",
     "typescript": "^5.3.3"
   }
 }

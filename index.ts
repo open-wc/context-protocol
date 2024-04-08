@@ -1,9 +1,11 @@
 import { ObservableMap } from "./observable-map.js";
-import { createContext, ContextEvent, UnknownContext } from "./context-protocol.js";
+import {
+  createContext,
+  ContextEvent,
+  UnknownContext,
+} from "./context-protocol.js";
 
-interface CustomElement extends HTMLElement {
-  new (...args: any[]): CustomElement;
-  observedAttributes: string[];
+export interface CustomElement extends Element {
   connectedCallback?(): void;
   attributeChangedCallback?(
     name: string,
@@ -12,9 +14,20 @@ interface CustomElement extends HTMLElement {
   ): void;
   disconnectedCallback?(): void;
   adoptedCallback?(): void;
+  formAssociatedCallback?(form: HTMLFormElement): void;
+  formDisabledCallback?(disabled: boolean): void;
+  formResetCallback?(): void;
+  formStateRestoreCallback?(
+    state: unknown,
+    reason: "autocomplete" | "restore",
+  ): void;
 }
 
-export function ProviderMixin(Class: CustomElement): CustomElement {
+export declare type Constructor<T> = new (...args: any[]) => T;
+
+export function ProviderMixin<T extends Constructor<CustomElement>>(
+  Class: T,
+): T & Constructor<unknown> {
   return class extends Class {
     #dataStore = new ObservableMap();
 
@@ -27,11 +40,12 @@ export function ProviderMixin(Class: CustomElement): CustomElement {
         this.#dataStore.set(key, value());
       }
 
-      this.addEventListener('context-request', this);
+      this.addEventListener("context-request", this);
     }
 
     disconnectedCallback(): void {
       this.#dataStore = new ObservableMap();
+      this.removeEventListener("context-request", this);
     }
 
     handleEvent(event: Event) {
@@ -72,9 +86,27 @@ export function ProviderMixin(Class: CustomElement): CustomElement {
   };
 }
 
-export function ConsumerMixin(Class: CustomElement): CustomElement {
+type ConsumerElement = CustomElement & {
+  contexts?: Record<PropertyKey, (data: any) => void>;
+};
+
+export function ConsumerMixin<T extends Constructor<ConsumerElement>>(
+  Class: T,
+): T & Constructor<ConsumerElement> {
   return class extends Class {
-    unsubscribes: Array<() => void> = [];
+    #unsubscribes: Array<() => void> = [];
+
+    getContext(contextName: string) {
+      let result;
+
+      this.dispatchEvent(
+        new ContextEvent(createContext(contextName), (data) => {
+          result = data;
+        }),
+      );
+
+      return result;
+    }
 
     connectedCallback() {
       super.connectedCallback?.();
@@ -90,10 +122,9 @@ export function ConsumerMixin(Class: CustomElement): CustomElement {
           new ContextEvent(
             context,
             (data, unsubscribe) => {
-              // @ts-expect-error
               callback(data);
               if (unsubscribe) {
-                this.unsubscribes.push(unsubscribe);
+                this.#unsubscribes.push(unsubscribe);
               }
             },
             // Always subscribe. Consumers can ignore updates if they'd like.
@@ -105,12 +136,12 @@ export function ConsumerMixin(Class: CustomElement): CustomElement {
 
     // Unsubscribe from all callbacks when disconnecting
     disconnectedCallback() {
-      for (const unsubscribe of this.unsubscribes) {
+      for (const unsubscribe of this.#unsubscribes) {
         unsubscribe?.();
       }
       // Empty out the array in case this element is still stored in memory but just not connected
       // to the DOM.
-      this.unsubscribes = [];
+      this.#unsubscribes = [];
     }
   };
 }
