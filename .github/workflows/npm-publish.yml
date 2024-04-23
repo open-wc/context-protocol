@@ -1,41 +1,41 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
-
-name: Node.js Package
+name: Publish package to registries
 
 on:
-  workflow_dispatch:
   release:
     types: [created]
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  publish-npm:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: 21
-          registry-url: https://registry.npmjs.org/
+          node-version: 21.x
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
       - run: npm ci
-      - run: npm run build
+      - run: npm run build --if-present
+      - run: |
+          cp jsr.json jsr.json.old
+          jq ".version = \"${TAG_NAME}\"" jsr.json.old > jsr.json
+          rm jsr.json.old
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+      - run: npx jsr publish --allow-dirty --allow-slow-types
+      - run: npm version ${TAG_NAME} --git-tag-version=false
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-  
-  publish-jsr:
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 21
-          registry-url: https://registry.npmjs.org/
-      - run: npm ci
-      - run: npm run build
-      - run: npx jsr publish
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
