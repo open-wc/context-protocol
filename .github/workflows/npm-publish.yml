@@ -7,12 +7,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -26,13 +20,6 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: npm run build --if-present
-      - run: |
-          cp jsr.json jsr.json.old
-          jq ".version = \"${TAG_NAME}\"" jsr.json.old > jsr.json
-          rm jsr.json.old
-        env:
-          TAG_NAME: ${{ github.event.release.tag_name }}
-      - run: npx jsr publish --allow-dirty --allow-slow-types
       - run: npm version ${TAG_NAME} --git-tag-version=false
         env:
           TAG_NAME: ${{ github.event.release.tag_name }}
