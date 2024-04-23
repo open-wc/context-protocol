@@ -1,5 +1,5 @@
 {
-  "name": "@koddsson/context-protocol",
+  "name": "@open-wc/context-protocol",
   "version": "0.0.3",
   "description": "A Lit compatible implementation of the context-protocol community protocol",
   "type": "module",
