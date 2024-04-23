@@ -1,11 +1,11 @@
-# @koddsson/context-protocol
+# @open-wc/context-protocol
 
 A Lit compatible implementation of the [context-protocol community protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md).
 
 ## Installation
 
 ```sh
-npm install --save @koddsson/context-protocol
+npm install --save @open-wc/context-protocol
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ npm install --save @koddsson/context-protocol
 A component that implements the ProviderMixin will become a _Provider_ of data and a component that implements the ConsumerMixin will become a _Consumer_ of data.
 
 ```ts
-import { ProviderMixin } from "@koddsson/context-protocol";
+import { ProviderMixin } from "@open-wc/context-protocol";
 
 export class ProviderElement extends ProviderMixin(HTMLElement) {
   // Set any data contexts here.
@@ -26,15 +26,15 @@ export class ProviderElement extends ProviderMixin(HTMLElement) {
   async connectedCallback() {
     // It's also possible to provide context at any point using `updateContext`.
 
-    const response = await fetch('/api/messages/');
+    const response = await fetch("/api/messages/");
     const data = await response.json();
-    this.updateContext('number-of-unread-messages', data.unreadCount);
+    this.updateContext("number-of-unread-messages", data.unreadCount);
   }
 }
 ```
 
 ```ts
-import { ConsumerMixin } from "@koddsson/context-protocol";
+import { ConsumerMixin } from "@open-wc/context-protocol";
 
 export class ConsumerElement extends ConsumerMixin(HTMLElement) {
   contexts = {
@@ -46,7 +46,7 @@ export class ConsumerElement extends ConsumerMixin(HTMLElement) {
 
   connectedCallback() {
     // It's also possible to get any context on demand without subscribing.
-    this.textContent = this.getContext('number-of-unread-messages');
+    this.textContent = this.getContext("number-of-unread-messages");
   }
 }
 ```
