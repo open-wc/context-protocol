@@ -9,6 +9,7 @@
     "test:e2e": "web-test-runner",
     "test:types": "tsc --noEmit"
   },
+  "files": ["./dist/"],
   "exports": {
     ".": {
       "default": "./dist/index.js",
