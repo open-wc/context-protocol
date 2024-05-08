@@ -10,6 +10,7 @@
     "test:types": "tsc --noEmit"
   },
   "files": ["./dist/"],
+  "module": "./dist/index.js",
   "exports": {
     ".": {
       "default": "./dist/index.js",
