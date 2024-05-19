@@ -1,7 +1,8 @@
 import { ObservableMap } from "./observable-map.js";
 import {
   createContext,
-  ContextEvent,
+  Context,
+  ContextRequestEvent,
   UnknownContext,
 } from "./context-protocol.js";
 
@@ -27,7 +28,7 @@ export declare type Constructor<T> = new (...args: any[]) => T;
 
 type ProviderElement = CustomElement & {
   contexts?: Record<PropertyKey, () => unknown>;
-  updateContext?(name: string, value: unknown): void;
+  updateContext?(name: PropertyKey, value: unknown): void;
 };
 
 type ConsumerElement = CustomElement & {
@@ -57,18 +58,14 @@ export function ProviderMixin<T extends Constructor<ProviderElement>>(
       this.removeEventListener("context-request", this.#handleContextRequest);
     }
 
-    updateContext(name: string, value: unknown) {
-      this.#dataStore.set(name, value);
+    updateContext(name: PropertyKey, value: unknown) {
+      this.#dataStore.set(createContext(name), value);
     }
 
     // We listen for a bubbled context request event and provide the event with the context requested.
-    #handleContextRequest(event: ContextEvent<UnknownContext>) {
-      const { name, initialValue } = event.context;
+    #handleContextRequest(event: ContextRequestEvent<UnknownContext>) {
       const subscribe = event.subscribe;
-      if (initialValue) {
-        this.#dataStore.set(name, initialValue);
-      }
-      const data = this.#dataStore.get(name);
+      const data = this.#dataStore.get(event.context);
       if (data) {
         event.stopPropagation();
 
@@ -93,11 +90,11 @@ export function ConsumerMixin<T extends Constructor<ConsumerElement>>(
   return class extends Class {
     #unsubscribes: Array<() => void> = [];
 
-    getContext(contextName: string) {
-      let result;
+    getContext(contextName: PropertyKey) {
+      let result: unknown;
 
       this.dispatchEvent(
-        new ContextEvent(createContext(contextName), (data) => {
+        new ContextRequestEvent(createContext(contextName), (data) => {
           result = data;
         }),
       );
@@ -116,7 +113,7 @@ export function ConsumerMixin<T extends Constructor<ConsumerElement>>(
         // reaches a component that is able to provide that value to us.
         // The event has a callback for the the value.
         this.dispatchEvent(
-          new ContextEvent(
+          new ContextRequestEvent(
             context,
             (data, unsubscribe) => {
               callback(data);
